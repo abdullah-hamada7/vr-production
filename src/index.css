@@ -951,18 +951,14 @@ h1, h2, h3, h4, h5, h6 {
 video {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: transparent;
   transform: scaleX(-1);
 }
 
 .output-canvas {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   z-index: 10;
-  object-fit: cover;
   transform: scaleX(-1);
 }
 /* ===== WALLPAPER CONTAINER (Camera Off) ===== */
@@ -1743,7 +1739,7 @@ video {
 .video-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 4 / 3;
   border-radius: var(--radius-sm);
   border: 2px solid var(--brand-primary);
   background: linear-gradient(145deg, #0D1420, #1A2332);

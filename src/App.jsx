@@ -35,6 +35,7 @@ export default function App() {
   const cameraRef = useRef(null);
   const animationFrameId = useRef(null);
   const fileInputRef = useRef(null);
+  const containerRef = useRef(null);
 
   // Tracking refs
   const stageRef = useRef(getExerciseInitialStage('squats'));
@@ -113,6 +114,47 @@ export default function App() {
     resetSession();
   }, [selectedExerciseId]); // eslint-disable-line
 
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(() => fitCanvas());
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  function fitCanvas() {
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (!video || !canvas || !container || !video.videoWidth) return;
+
+    const containerW = container.clientWidth;
+    const containerH = container.clientHeight;
+    const videoAspect = video.videoWidth / video.videoHeight;
+    const containerAspect = containerW / containerH;
+
+    let renderW, renderH, offsetX, offsetY;
+
+    if (videoAspect > containerAspect) {
+      // Video is wider → fit width, letterbox top/bottom
+      renderW = containerW;
+      renderH = Math.round(containerW / videoAspect);
+      offsetX = 0;
+      offsetY = Math.round((containerH - renderH) / 2);
+    } else {
+      // Video is taller → fit height, pillarbox left/right
+      renderH = containerH;
+      renderW = Math.round(containerH * videoAspect);
+      offsetX = Math.round((containerW - renderW) / 2);
+      offsetY = 0;
+    }
+
+    canvas.style.left   = `${offsetX}px`;
+    canvas.style.top    = `${offsetY}px`;
+    canvas.style.width  = `${renderW}px`;
+    canvas.style.height = `${renderH}px`;
+    canvas.width  = video.videoWidth;
+    canvas.height = video.videoHeight;
+  }
 
   function updateFeedback(textEn, type, isCorrect = false) {
     setIsCorrectForm(isCorrect);
@@ -263,6 +305,7 @@ export default function App() {
         setSourceType('CAMERA');
         sourceTypeRef.current = 'CAMERA';
         setIsCameraReady(true);
+        fitCanvas();
         pumpFrames();
       };
       if (video.readyState >= 2) onMetadataLoaded();
@@ -288,6 +331,7 @@ export default function App() {
       setSourceType('FILE');
       sourceTypeRef.current = 'FILE';
       setIsCameraReady(true);
+      fitCanvas();
     };
   }
 
@@ -413,7 +457,7 @@ export default function App() {
 
       <div className="main-content">
         <div className="stage-area">
-          <div className={`video-container ${isCameraReady ? 'active' : ''}`}>
+          <div ref={containerRef} className={`video-container ${isCameraReady ? 'active' : ''}`}>
             <ErrorOverlay feedback={feedback} />
             <GoodFormBadge isCorrectForm={isCorrectForm} />
             
@@ -422,12 +466,10 @@ export default function App() {
               ref={videoRef} 
               playsInline 
               muted 
-              style={{ display: isCameraReady ? 'block' : 'none' }}
             ></video>
             <canvas 
               ref={canvasRef} 
               className="output-canvas"
-              style={{ display: isCameraReady ? 'block' : 'none' }}
             ></canvas>
 
             {sessionPhase === 'ACTIVE' && isCameraReady && (
