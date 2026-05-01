@@ -17,3 +17,8 @@ export const exercises = {
 };
 
 export const getExercise = (id) => exercises[id] || exercises.squats;
+
+export const getExerciseInitialStage = (id) => {
+  const ex = exercises[id];
+  return ex?.initialStage ?? 'UP';
+};

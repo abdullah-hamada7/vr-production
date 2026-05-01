@@ -3,6 +3,7 @@ import { calculateAngle } from '../utils/angles';
 export default {
   id: 'anklePump',
   name: 'Ankle Pump',
+  initialStage: 'PLANTAR',
   joints: {
     knee: 25,
     ankle: 27,

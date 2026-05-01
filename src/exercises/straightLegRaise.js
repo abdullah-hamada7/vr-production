@@ -3,6 +3,7 @@ import { calculateAngle } from '../utils/angles';
 export default {
   id: 'straightLegRaise',
   name: 'Straight Leg Raise',
+  initialStage: 'REST',
   joints: {
     hip: 23,
     knee: 25,
@@ -26,8 +27,6 @@ export default {
     }
 
     const legStraightness = calculateAngle(hip, knee, ankle);
-    const verticalPoint = { x: hip.x, y: hip.y + 0.5 };
-    calculateAngle(verticalPoint, hip, knee); 
 
     const hipDistance = Math.abs(hip.x - contraHip.x);
     const isCompensating = hipDistance > 0.08;
@@ -47,7 +46,7 @@ export default {
 
     const heightLifted = hip.y - knee.y; 
 
-    if (heightLifted > 0.2) { 
+    if (heightLifted > 0.1) { 
       if (stage === 'REST') {
         if (isCorrectForm) {
           feedback = { textEn: 'Target height reached!', type: 'good' };
@@ -56,7 +55,7 @@ export default {
       nextStage = 'RAISE';
     }
 
-    if (heightLifted < 0.05) { 
+    if (heightLifted < 0.08) { 
       if (stage === 'RAISE') {
         if (isCorrectForm) {
           isGoodRep = true;

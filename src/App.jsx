@@ -14,7 +14,7 @@ import GoodFormBadge from './components/GoodFormBadge';
 import PreSessionScreen from './components/PreSessionScreen';
 import VideoReferenceModal from './components/VideoReferenceModal';
 
-import { getExercise } from './exercises';
+import { getExercise, getExerciseInitialStage } from './exercises';
 
 export default function App() {
   // Remove splash screen after its animation completes (approx 3.5s)
@@ -37,7 +37,7 @@ export default function App() {
   const fileInputRef = useRef(null);
 
   // Tracking refs
-  const stageRef = useRef('UP');
+  const stageRef = useRef(getExerciseInitialStage('squats'));
   const repsRef = useRef(0);
   const startTimeRef = useRef(null);
   const currentExerciseRef = useRef(null);
@@ -46,7 +46,7 @@ export default function App() {
   const peakAngleRef = useRef(null);
   const prevAngleRef = useRef(null);
   const smoothedAngleRef = useRef(null);
-  const baselineAngleRef = useRef(165);
+  const baselineAngleRef = useRef(ROM_CONFIG['squats']?.startAngle ?? 165);
 
   // Phase Timing (TUT)
   const phaseStartTimeRef = useRef(null);
@@ -64,6 +64,9 @@ export default function App() {
   const [reps, setReps] = useState(0);
   const [feedback, setFeedback] = useState({ textEn: 'Ready to start', type: 'neutral' });
   const [isCameraReady, setIsCameraReady] = useState(false);
+  // 'NONE' | 'CAMERA' | 'FILE'
+  const [sourceType, setSourceType] = useState('NONE');
+  const sourceTypeRef = useRef('NONE');
   const [sessions, setSessions] = useState(getSessions);
   
   const [latestROM, setLatestROM] = useState(null);
@@ -150,7 +153,7 @@ export default function App() {
           let rawAngle = analysis.angles[cfg.primaryKey];
 
           if (rawAngle != null) {
-            if (rawAngle < 5 || rawAngle > 200) rawAngle = prevAngleRef.current || 165;
+            if (rawAngle < 5 || rawAngle > 200) rawAngle = prevAngleRef.current ?? (cfg?.startAngle ?? 165);
             const prevRaw = prevAngleRef.current;
             const isExtremeJump = prevRaw !== null && Math.abs(rawAngle - prevRaw) > 40;
             prevAngleRef.current = rawAngle;
@@ -159,10 +162,19 @@ export default function App() {
               if (smoothedAngleRef.current === null) smoothedAngleRef.current = rawAngle;
               else smoothedAngleRef.current = (smoothedAngleRef.current * 0.8) + (rawAngle * 0.2);
 
-              if (stageRef.current === 'UP' && !analysis.isGoodRep) baselineAngleRef.current = (baselineAngleRef.current * 0.98) + (rawAngle * 0.02);
-              if (stageRef.current === 'UP' && analysis.stage === 'DOWN') peakAngleRef.current = rawAngle;
-              else if (stageRef.current === 'DOWN') {
-                if (peakAngleRef.current === null || rawAngle < peakAngleRef.current) peakAngleRef.current = rawAngle;
+              const initialStage = getExerciseInitialStage(selectedExerciseId);
+              if (stageRef.current === initialStage && !analysis.isGoodRep) {
+                baselineAngleRef.current = (baselineAngleRef.current * 0.98) + (rawAngle * 0.02);
+              }
+
+              if (analysis.stage !== stageRef.current) {
+                // Stage just changed — start fresh peak for new phase
+                peakAngleRef.current = rawAngle;
+              } else {
+                // Within same phase — track minimum (deepest) angle
+                if (peakAngleRef.current === null || rawAngle < peakAngleRef.current) {
+                  peakAngleRef.current = rawAngle;
+                }
               }
 
               if (analysis.stage !== stageRef.current) {
@@ -182,7 +194,7 @@ export default function App() {
             repsRef.current = newReps;
             setReps(newReps);
             if (!startTimeRef.current) startTimeRef.current = Date.now();
-            const repPeak = peakAngleRef.current || rawAngle || 165;
+            const repPeak = peakAngleRef.current ?? rawAngle ?? (cfg?.startAngle ?? 165);
             const range = Math.abs(baselineAngleRef.current - cfg.targetAngle);
             const achieved = Math.abs(baselineAngleRef.current - repPeak);
             let score = Math.round((achieved / range) * 100);
@@ -210,30 +222,46 @@ export default function App() {
     ctx.restore();
   }
 
-  async function startCamera() {
-    stopCamera();
-    // Use a small delay to ensure React has mounted the video element if it was hidden
-    await new Promise(r => setTimeout(r, 50));
-    
-    const video = videoRef.current;
-    if (!video) {
-      console.error('Video element not found for camera start');
-      return;
+  // Stops only the frame-pump loop — does NOT wipe the video source.
+  function stopAnalysis() {
+    if (animationFrameId.current) {
+      cancelAnimationFrame(animationFrameId.current);
+      animationFrameId.current = null;
     }
-    
+  }
+
+  // Fully tears down whichever source is active (camera stream OR file).
+  function stopSource() {
+    if (cameraRef.current) { cameraRef.current.stop(); cameraRef.current = null; }
+    stopAnalysis();
+    if (videoRef.current) { videoRef.current.srcObject = null; videoRef.current.src = ''; }
+    setIsCameraReady(false);
+    setSourceType('NONE');
+    sourceTypeRef.current = 'NONE';
+  }
+
+  // Legacy alias used by the MediaPipe cleanup effect and exercise change.
+  function stopCamera() { stopSource(); }
+
+  async function startCamera() {
+    stopSource();
+    await new Promise(r => setTimeout(r, 50));
+    const video = videoRef.current;
+    if (!video) { console.error('Video element not found for camera start'); return; }
     video.style.transform = 'scaleX(-1)';
     if (canvasRef.current) canvasRef.current.style.transform = 'scaleX(-1)';
-
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' }, 
-        audio: false 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+        audio: false
       });
       video.srcObject = stream;
       const onMetadataLoaded = () => {
         if (canvasRef.current) { canvasRef.current.width = video.videoWidth; canvasRef.current.height = video.videoHeight; }
         video.play();
         cameraRef.current = { stop: () => stream.getTracks().forEach(t => t.stop()) };
+        setSourceType('CAMERA');
+        sourceTypeRef.current = 'CAMERA';
         setIsCameraReady(true);
         pumpFrames();
       };
@@ -245,27 +273,22 @@ export default function App() {
   function handleFileUpload(e) {
     const file = e.target.files[0];
     if (!file) return;
-    stopCamera();
+    stopSource();
     const video = videoRef.current;
     if (!video) return;
-    
     video.style.transform = 'none';
     if (canvasRef.current) canvasRef.current.style.transform = 'none';
     video.srcObject = null;
     video.src = URL.createObjectURL(file);
     video.onloadedmetadata = () => {
       if (canvasRef.current) { canvasRef.current.width = video.videoWidth; canvasRef.current.height = video.videoHeight; }
-      video.play();
+      // Lazy load: pause at frame 0, do NOT start analysis yet.
+      video.pause();
+      video.currentTime = 0;
+      setSourceType('FILE');
+      sourceTypeRef.current = 'FILE';
       setIsCameraReady(true);
-      pumpFrames();
     };
-  }
-
-  function stopCamera() {
-    if (cameraRef.current) { cameraRef.current.stop(); cameraRef.current = null; }
-    if (animationFrameId.current) { cancelAnimationFrame(animationFrameId.current); animationFrameId.current = null; }
-    if (videoRef.current) { videoRef.current.srcObject = null; videoRef.current.src = ''; }
-    setIsCameraReady(false);
   }
 
   async function pumpFrames() {
@@ -278,15 +301,59 @@ export default function App() {
   }
 
   function resetSession() {
-    repsRef.current = 0; stageRef.current = 'UP'; startTimeRef.current = null; peakAngleRef.current = null;
-    prevAngleRef.current = null; smoothedAngleRef.current = null; baselineAngleRef.current = 165;
-    repROMScoresRef.current = []; latestAsymmetryRef.current = null; latestStabilityRef.current = null;
-    setReps(0); setRepROMScores([]); setLatestROM(null); setLatestAngle(null); setLatestAsymmetry(null); setLatestStability(null);
-    phaseStartTimeRef.current = null; phaseDurationsRef.current = { eccentric: 0, concentric: 0 };
-    setSessionPhase('SETUP'); setIsCorrectForm(false); updateFeedback('Ready to start', 'neutral');
+    repsRef.current = 0;
+    stageRef.current = getExerciseInitialStage(selectedExerciseId);
+    startTimeRef.current = null;
+    peakAngleRef.current = null;
+    prevAngleRef.current = null;
+    smoothedAngleRef.current = null;
+    // Use the exercise's clinical start angle, not a hardcoded 165
+    const cfg = ROM_CONFIG[selectedExerciseId];
+    baselineAngleRef.current = cfg?.startAngle ?? 165;
+    repROMScoresRef.current = [];
+    latestAsymmetryRef.current = null;
+    latestStabilityRef.current = null;
+    setReps(0); setRepROMScores([]); setLatestROM(null);
+    setLatestAngle(null); setLatestAsymmetry(null); setLatestStability(null);
+    phaseStartTimeRef.current = null;
+    phaseDurationsRef.current = { eccentric: 0, concentric: 0 };
+    // Clear any active video source (camera or file)
+    stopSource();
+    setSessionPhase('SETUP');
+    setIsCorrectForm(false);
+    updateFeedback('Ready to start', 'neutral');
   }
 
-  function startSession() { resetSession(); setSessionPhase('ACTIVE'); speak('Session started'); }
+  function startSession() {
+    // Reset clinical data but preserve source state before overwriting phase
+    repsRef.current = 0;
+    stageRef.current = getExerciseInitialStage(selectedExerciseId);
+    startTimeRef.current = null;
+    peakAngleRef.current = null;
+    prevAngleRef.current = null;
+    smoothedAngleRef.current = null;
+    const cfg = ROM_CONFIG[selectedExerciseId];
+    baselineAngleRef.current = cfg?.startAngle ?? 165;
+    repROMScoresRef.current = [];
+    latestAsymmetryRef.current = null;
+    latestStabilityRef.current = null;
+    setReps(0); setRepROMScores([]); setLatestROM(null);
+    setLatestAngle(null); setLatestAsymmetry(null); setLatestStability(null);
+    phaseStartTimeRef.current = null;
+    phaseDurationsRef.current = { eccentric: 0, concentric: 0 };
+    setIsCorrectForm(false);
+    setSessionPhase('ACTIVE');
+    speak('Session started');
+    // If a file is loaded, start playback + analysis now
+    if (sourceTypeRef.current === 'FILE') {
+      const video = videoRef.current;
+      if (video) {
+        video.currentTime = 0;
+        video.play();
+        pumpFrames();
+      }
+    }
+  }
 
   function finishSession() {
     if (repsRef.current > 0) {
@@ -404,8 +471,9 @@ export default function App() {
                 setSelectedExercise={setSelectedExerciseId}
                 onStartSession={startSession}
                 isCameraReady={isCameraReady}
+                sourceType={sourceType}
                 onStartCamera={startCamera}
-                onStopCamera={stopCamera}
+                onStopSource={stopSource}
                 onOpenVideo={() => setIsVideoModalOpen(true)}
                 onFileUpload={() => fileInputRef.current?.click()}
                 targetReps={targetReps}

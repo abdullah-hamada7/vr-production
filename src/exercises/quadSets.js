@@ -3,6 +3,7 @@ import { calculateAngle } from '../utils/angles';
 export default {
   id: 'quadSets',
   name: 'Quad Sets',
+  initialStage: 'RELAX',
   joints: {
     hip: 23,
     knee: 25,
@@ -25,7 +26,7 @@ export default {
 
     const kneeAngle = calculateAngle(hip, knee, ankle);
     
-    let nextStage;
+    let nextStage = stage;
     let feedback = { textEn: 'Press knee down', type: 'neutral' };
     let isGoodRep = false;
     let isCorrectForm = false;

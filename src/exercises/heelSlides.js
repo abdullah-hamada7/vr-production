@@ -3,6 +3,7 @@ import { calculateAngle } from '../utils/angles';
 export default {
   id: 'heelSlides',
   name: 'Heel Slides',
+  initialStage: 'EXTEND',
   joints: {
     hip: 23,
     knee: 25,
@@ -39,7 +40,7 @@ export default {
       nextStage = 'EXTEND';
     }
 
-    if (kneeAngle < 100) {
+    if (kneeAngle < 110) {
       if (stage === 'EXTEND') {
         feedback = { textEn: 'Optimal flexion reached', type: 'good' };
         nextStage = 'FLEX';

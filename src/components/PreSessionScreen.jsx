@@ -20,7 +20,7 @@ const exerciseDescriptions = {
   quadSets: 'Thigh muscle control'
 };
 
-export default function PreSessionScreen({ selectedExercise, setSelectedExercise, onStartSession, isCameraReady, onStartCamera, onStopCamera, onOpenVideo, onFileUpload, targetReps, onTargetRepsChange }) {
+export default function PreSessionScreen({ selectedExercise, setSelectedExercise, onStartSession, isCameraReady, sourceType, onStartCamera, onStopSource, onOpenVideo, onFileUpload, targetReps, onTargetRepsChange }) {
   return (
     <div className="pre-session-mobile">
       <div className="mobile-header">
@@ -55,11 +55,11 @@ export default function PreSessionScreen({ selectedExercise, setSelectedExercise
         </div>
       </div>
 
-      {/* Step 2: Camera */}
+      {/* Step 2: Camera / Video Source */}
       <div className="mobile-step">
         <div className="step-badge">2</div>
         <div className="step-content">
-          <h3>Camera</h3>
+          <h3>{sourceType === 'FILE' ? 'Video Source' : 'Camera'}</h3>
           {!isCameraReady ? (
             <div className="camera-buttons-mobile">
               <button onClick={onStartCamera} className="btn-primary-mobile">
@@ -75,10 +75,10 @@ export default function PreSessionScreen({ selectedExercise, setSelectedExercise
             <div className="camera-active-mobile">
               <div className="camera-status">
                 <span className="material-icons pulse-icon">check_circle</span>
-                <span>Camera Active</span>
+                <span>{sourceType === 'FILE' ? 'Video Loaded' : 'Camera Active'}</span>
               </div>
-              <button onClick={onStopCamera} className="btn-text-mobile">
-                Turn Off
+              <button onClick={onStopSource} className="btn-text-mobile">
+                {sourceType === 'FILE' ? 'Remove Video' : 'Turn Off'}
               </button>
             </div>
           )}
@@ -128,8 +128,14 @@ export default function PreSessionScreen({ selectedExercise, setSelectedExercise
         disabled={!isCameraReady}
         className="start-btn-mobile"
       >
-        <span className="material-icons">{isCameraReady ? 'play_arrow' : 'videocam_off'}</span>
-        {isCameraReady ? 'Start Now' : 'Enable camera first'}
+        <span className="material-icons">
+          {!isCameraReady ? 'videocam_off' : sourceType === 'FILE' ? 'play_circle' : 'play_arrow'}
+        </span>
+        {!isCameraReady
+          ? 'Enable camera first'
+          : sourceType === 'FILE'
+          ? 'Analyze Video'
+          : 'Start Now'}
       </button>
     </div>
   );
