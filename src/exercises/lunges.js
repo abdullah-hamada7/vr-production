@@ -39,7 +39,7 @@ export default {
       nextStage = 'UP';
     }
 
-    if (kneeAngle < 100) {
+    if (kneeAngle < 120) { // 120° = functional lunge depth for rehab; 100° required full athletic depth
       if (stage === 'UP') {
         feedback = { textEn: 'Great depth!', type: 'good' };
         nextStage = 'DOWN';

@@ -1,25 +1,25 @@
 export const ROM_CONFIG = {
   squats: {
     primaryKey: 'knee', label: 'Knee Flexion',
-    targetAngle: 100, startAngle: 165, normalRange: '≤ 100°',
+    targetAngle: 120, startAngle: 165, normalRange: '≤ 120°',
     videoUrl: 'https://www.youtube.com/embed/aclHkVaku9U',
-    clinicalAdvice: 'Keep knees behind toes. Descend until thighs are parallel to floor. Maintain neutral spine throughout.'
+    clinicalAdvice: 'Keep knees behind toes. Descend until thighs are ~45° past horizontal. Maintain neutral spine throughout.'
   },
   heelSlides: {
     primaryKey: 'knee', label: 'Knee Flexion',
-    targetAngle: 90, startAngle: 165, normalRange: '≤ 90°',
+    targetAngle: 110, startAngle: 160, normalRange: '≤ 120°',
     videoUrl: 'https://www.youtube.com/embed/t17Z6HeiiQs',
     clinicalAdvice: 'Lie flat. Slowly slide heel toward buttocks. Hold at end-range for 2s. Return slowly. Avoid hip hiking.'
   },
   bicepCurls: {
     primaryKey: 'elbow', label: 'Elbow Flexion',
-    targetAngle: 40, startAngle: 165, normalRange: '≤ 40°',
+    targetAngle: 65, startAngle: 155, normalRange: '≤ 70°',
     videoUrl: 'https://www.youtube.com/embed/ykJmrZ5v0Oo',
-    clinicalAdvice: 'Keep elbow pinned to side. Full extension at bottom, full flexion at top. Control the eccentric phase.'
+    clinicalAdvice: 'Keep elbow pinned to side. Lower to ~150° at bottom, curl to ~65° at top. Control the eccentric phase.'
   },
   lunges: {
     primaryKey: 'knee', label: 'Knee Flexion',
-    targetAngle: 90, startAngle: 165, normalRange: '≤ 90°',
+    targetAngle: 115, startAngle: 165, normalRange: '≤ 120°',
     videoUrl: 'https://www.youtube.com/embed/QOVaHwm-Q6U',
     clinicalAdvice: 'Step forward, lower back knee toward floor. Keep front shin vertical. Maintain upright torso.'
   },
@@ -31,9 +31,9 @@ export const ROM_CONFIG = {
   },
   anklePump: {
     primaryKey: 'ankle', label: 'Ankle Range',
-    targetAngle: 70, startAngle: 130, normalRange: '70° - 130°',
+    targetAngle: 90, startAngle: 120, normalRange: '90° – 115°',
     videoUrl: 'https://www.youtube.com/embed/hh_fsJOpFjQ',
-    clinicalAdvice: 'Pump ankle up (dorsiflexion) and down (plantarflexion) through full range. Slow, controlled rhythm. Promotes DVT prophylaxis.'
+    clinicalAdvice: 'Pump ankle up (dorsiflexion to ~90°) and down (plantarflexion to ~115°) through full range. Slow, controlled rhythm. Promotes DVT prophylaxis.'
   },
   quadSets: {
     primaryKey: 'holdTime', label: 'Hold Duration',

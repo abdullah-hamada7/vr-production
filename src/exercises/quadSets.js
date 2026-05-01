@@ -31,13 +31,13 @@ export default {
     let isGoodRep = false;
     let isCorrectForm = false;
 
-    if (kneeAngle < 170) {
+    if (kneeAngle < 160) { // MediaPipe reads 162–165° for a visually flat leg; 170° was impossible without hyperextension
       feedback = { textEn: 'Straighten your leg', type: 'error' };
     } else {
       isCorrectForm = true;
     }
 
-    const isContracting = kneeAngle > 175;
+    const isContracting = kneeAngle > 163; // 163° = "leg pressed flat" threshold; 175° required near-hyperextension
 
     if (isContracting) {
       if (stage === 'RELAX') {

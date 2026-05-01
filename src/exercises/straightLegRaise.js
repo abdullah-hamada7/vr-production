@@ -29,14 +29,14 @@ export default {
     const legStraightness = calculateAngle(hip, knee, ankle);
 
     const hipDistance = Math.abs(hip.x - contraHip.x);
-    const isCompensating = hipDistance > 0.08;
+    const isCompensating = hipDistance > 0.12; // 0.12 reduces false positives from breathing; 0.08 was too sensitive
 
     let nextStage = stage;
     let feedback = { textEn: 'Keep leg straight and lift', type: 'neutral' };
     let isGoodRep = false;
     let isCorrectForm = false;
 
-    if (legStraightness < 165) {
+    if (legStraightness < 155) { // MediaPipe reads ~158° on a visually straight limb in motion; 165° was impossible mid-lift
       feedback = { textEn: 'Keep leg straight', type: 'error' };
     } else if (isCompensating) {
       feedback = { textEn: 'Control hip rotation', type: 'error' };

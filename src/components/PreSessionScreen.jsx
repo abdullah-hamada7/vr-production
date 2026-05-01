@@ -122,11 +122,11 @@ export default function PreSessionScreen({ selectedExercise, setSelectedExercise
         How to do this exercise?
       </button>
 
-      {/* Start Button */}
+      {/* Start Button — hidden on mobile; sticky CTA below takes over */}
       <button 
         onClick={onStartSession}
         disabled={!isCameraReady}
-        className="start-btn-mobile"
+        className="start-btn-mobile no-mobile"
       >
         <span className="material-icons">
           {!isCameraReady ? 'videocam_off' : sourceType === 'FILE' ? 'play_circle' : 'play_arrow'}

@@ -31,14 +31,14 @@ export default {
     let isGoodRep = false;
     let isCorrectForm = true; 
 
-    if (ankleAngle > 125) {
+    if (ankleAngle > 115) { // 115° catches moderate plantarflexion; 125° missed patients with limited ROM
       if (stage === 'DORSI') {
         feedback = { textEn: 'Good stretch', type: 'good' };
       }
       nextStage = 'PLANTAR';
     }
 
-    if (ankleAngle < 80) {
+    if (ankleAngle < 95) { // 95° = near-neutral; active dorsiflexion typically peaks at 90–95°; 80° required extreme pull-back
       if (stage === 'PLANTAR') {
         isGoodRep = true;
         feedback = { textEn: 'Full pump completed!', type: 'good' };

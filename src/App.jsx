@@ -491,6 +491,27 @@ export default function App() {
       </div>
       <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="video/*" style={{ display: 'none' }} />
       {showReport && <TherapistReport data={currentReportData} onClose={() => setShowReport(false)} />}
+
+      {/* Sticky bottom CTA — mobile only, shown during SETUP */}
+      {sessionPhase === 'SETUP' && (
+        <div className="sticky-cta no-print">
+          <button
+            onClick={startSession}
+            disabled={!isCameraReady}
+            className="start-btn-mobile"
+            style={{ width: '100%' }}
+          >
+            <span className="material-icons">
+              {!isCameraReady ? 'videocam_off' : sourceType === 'FILE' ? 'play_circle' : 'play_arrow'}
+            </span>
+            {!isCameraReady
+              ? 'Enable camera or upload video'
+              : sourceType === 'FILE'
+              ? 'Analyze Video'
+              : 'Start Session'}
+          </button>
+        </div>
+      )}
     </div>
   );
 }

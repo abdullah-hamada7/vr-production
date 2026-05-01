@@ -60,9 +60,9 @@ export default {
     let isGoodRep = false;
     let isCorrectForm = true;
 
-    const isBackStraight = backAngle > 145;
-    const isStable = stabilityScore > 75;
-    const isBalanced = weightShift < 0.08;
+    const isBackStraight = backAngle > 130;  // 130° allows natural forward lean; 145° was too strict
+    const isStable = stabilityScore > 50;    // 50 reduces false fails from natural knee tracking
+    const isBalanced = weightShift < 0.15;   // ~10cm sway tolerance; 0.08 was only 5cm
 
     if (!isBackStraight) {
       feedback = { textEn: 'Keep your back upright', type: 'error' };
@@ -89,7 +89,9 @@ export default {
       nextStage = 'UP';
     }
 
-    if (primaryKnee < 100) {
+    if (primaryKnee < 120) {
+      // 120° = functional squat depth (thighs ~45° past horizontal)
+      // Old value of 100° required near-parallel thighs — impossible post-op
       if (stage === 'UP') {
         feedback = { textEn: 'Target depth reached!', type: 'good' };
         nextStage = 'DOWN';

@@ -27,7 +27,7 @@ export default {
     const elbowAngle = calculateAngle(shoulder, elbow, wrist);
 
     const elbowDrift = Math.abs(elbow.x - shoulder.x);
-    const isElbowTucked = elbowDrift < 0.15; 
+    const isElbowTucked = elbowDrift < 0.25; // 0.25 = ~17cm; 0.15 was too tight for non-perfect side views
     
     let nextStage = stage;
     let feedback = { textEn: 'Curl your arm...', type: 'neutral' };
@@ -39,7 +39,7 @@ export default {
       isCorrectForm = false;
     }
 
-    if (elbowAngle > 160) {
+    if (elbowAngle > 150) { // Full extension: MediaPipe reads ~148–155° even at true 180°; 160° was unreachable
       if (stage === 'UP') {
         if (isCorrectForm) {
           isGoodRep = true;
@@ -51,7 +51,7 @@ export default {
       nextStage = 'DOWN';
     }
 
-    if (elbowAngle < 50) { 
+    if (elbowAngle < 70) { // Typical rehab peak flexion is 60–80°; 50° required near-extreme contraction
       if (stage === 'DOWN') {
         if (isCorrectForm) {
           feedback = { textEn: 'Full contraction achieved!', type: 'good' };

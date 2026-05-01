@@ -32,7 +32,7 @@ export default {
     let isGoodRep = false;
     let isCorrectForm = true;
 
-    if (kneeAngle > 165) {
+    if (kneeAngle > 155) { // 155° = realistic near-full extension; post-TKA patients rarely reach 165°
       if (stage === 'FLEX') {
         isGoodRep = true;
         feedback = { textEn: 'Full extension achieved', type: 'good' };
@@ -40,7 +40,7 @@ export default {
       nextStage = 'EXTEND';
     }
 
-    if (kneeAngle < 110) {
+    if (kneeAngle < 120) { // 120° = early-phase target; 110° requires meaningful flexion; 100° was original impossible target
       if (stage === 'EXTEND') {
         feedback = { textEn: 'Optimal flexion reached', type: 'good' };
         nextStage = 'FLEX';
