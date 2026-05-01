@@ -1,42 +1,42 @@
 export const ROM_CONFIG = {
   squats: {
-    primaryKey: 'knee', label: 'Knee Flexion',
+    primaryKey: 'knee', label: 'Knee Flexion', orientation: 'portrait',
     targetAngle: 120, startAngle: 165, normalRange: '≤ 120°',
     videoUrl: 'https://www.youtube.com/embed/aclHkVaku9U',
     clinicalAdvice: 'Keep knees behind toes. Descend until thighs are ~45° past horizontal. Maintain neutral spine throughout.'
   },
   heelSlides: {
-    primaryKey: 'knee', label: 'Knee Flexion',
+    primaryKey: 'knee', label: 'Knee Flexion', orientation: 'landscape',
     targetAngle: 110, startAngle: 160, normalRange: '≤ 120°',
     videoUrl: 'https://www.youtube.com/embed/t17Z6HeiiQs',
     clinicalAdvice: 'Lie flat. Slowly slide heel toward buttocks. Hold at end-range for 2s. Return slowly. Avoid hip hiking.'
   },
   bicepCurls: {
-    primaryKey: 'elbow', label: 'Elbow Flexion',
+    primaryKey: 'elbow', label: 'Elbow Flexion', orientation: 'portrait',
     targetAngle: 65, startAngle: 155, normalRange: '≤ 70°',
     videoUrl: 'https://www.youtube.com/embed/ykJmrZ5v0Oo',
     clinicalAdvice: 'Keep elbow pinned to side. Lower to ~150° at bottom, curl to ~65° at top. Control the eccentric phase.'
   },
   lunges: {
-    primaryKey: 'knee', label: 'Knee Flexion',
+    primaryKey: 'knee', label: 'Knee Flexion', orientation: 'portrait',
     targetAngle: 115, startAngle: 165, normalRange: '≤ 120°',
     videoUrl: 'https://www.youtube.com/embed/QOVaHwm-Q6U',
     clinicalAdvice: 'Step forward, lower back knee toward floor. Keep front shin vertical. Maintain upright torso.'
   },
   straightLegRaise: {
-    primaryKey: 'hip', label: 'Hip Flexion',
+    primaryKey: 'hip', label: 'Hip Flexion', orientation: 'landscape',
     targetAngle: 120, startAngle: 170, normalRange: '≤ 120°',
     videoUrl: 'https://www.youtube.com/embed/U4L_6JEv9Jg',
     clinicalAdvice: 'Keep knee fully extended. Tighten quad before lifting. Raise to ~45°. Hold 2s. Lower slowly. Avoid trunk rotation.'
   },
   anklePump: {
-    primaryKey: 'ankle', label: 'Ankle Range',
+    primaryKey: 'ankle', label: 'Ankle Range', orientation: 'landscape',
     targetAngle: 90, startAngle: 120, normalRange: '90° – 115°',
     videoUrl: 'https://www.youtube.com/embed/hh_fsJOpFjQ',
     clinicalAdvice: 'Pump ankle up (dorsiflexion to ~90°) and down (plantarflexion to ~115°) through full range. Slow, controlled rhythm. Promotes DVT prophylaxis.'
   },
   quadSets: {
-    primaryKey: 'holdTime', label: 'Hold Duration',
+    primaryKey: 'holdTime', label: 'Hold Duration', orientation: 'landscape',
     targetAngle: 3, startAngle: 0, normalRange: '≥ 2s',
     videoUrl: 'https://www.youtube.com/embed/khUhNAq2Fzo',
     clinicalAdvice: 'Lie flat. Press back of knee firmly into bed. Hold 5–10s per contraction. Activate quad fully before hold.'

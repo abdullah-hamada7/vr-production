@@ -294,7 +294,7 @@ export default function App() {
     if (canvasRef.current) canvasRef.current.style.transform = 'scaleX(-1)';
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: 'user' },
+        video: { facingMode: 'user' },
         audio: false
       });
       video.srcObject = stream;
@@ -457,7 +457,7 @@ export default function App() {
 
       <div className="main-content">
         <div className="stage-area">
-          <div ref={containerRef} className={`video-container ${isCameraReady ? 'active' : ''}`}>
+          <div ref={containerRef} className={`video-container ${isCameraReady ? 'active' : ''} orientation-${ROM_CONFIG[selectedExerciseId]?.orientation || 'portrait'}`}>
             <ErrorOverlay feedback={feedback} />
             <GoodFormBadge isCorrectForm={isCorrectForm} />
             

@@ -1739,11 +1739,19 @@ video {
 .video-container {
   position: relative;
   width: 100%;
-  aspect-ratio: 4 / 3;
   border-radius: var(--radius-sm);
   border: 2px solid var(--brand-primary);
   background: linear-gradient(145deg, #0D1420, #1A2332);
   overflow: hidden;
+  transition: aspect-ratio 0.3s ease;
+}
+
+.video-container.orientation-portrait {
+  aspect-ratio: 3 / 4;
+}
+
+.video-container.orientation-landscape {
+  aspect-ratio: 4 / 3;
 }
 
 @media (min-width: 768px) {
