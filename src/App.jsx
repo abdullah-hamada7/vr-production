@@ -213,9 +213,16 @@ export default function App() {
                 // Stage just changed — start fresh peak for new phase
                 peakAngleRef.current = rawAngle;
               } else {
-                // Within same phase — track minimum (deepest) angle
-                if (peakAngleRef.current === null || rawAngle < peakAngleRef.current) {
+                // Within same phase — track deepest angle based on direction
+                const isFlexion = cfg.targetAngle < cfg.startAngle;
+                if (peakAngleRef.current === null) {
                   peakAngleRef.current = rawAngle;
+                } else {
+                  if (isFlexion) {
+                    peakAngleRef.current = Math.min(peakAngleRef.current, rawAngle);
+                  } else {
+                    peakAngleRef.current = Math.max(peakAngleRef.current, rawAngle);
+                  }
                 }
               }
 
@@ -237,9 +244,19 @@ export default function App() {
             setReps(newReps);
             if (!startTimeRef.current) startTimeRef.current = Date.now();
             const repPeak = peakAngleRef.current ?? rawAngle ?? (cfg?.startAngle ?? 165);
-            const range = Math.abs(baselineAngleRef.current - cfg.targetAngle);
-            const achieved = Math.abs(baselineAngleRef.current - repPeak);
-            let score = Math.round((achieved / range) * 100);
+            const isFlexion = cfg.targetAngle < cfg.startAngle;
+            
+            const totalRange = Math.abs(baselineAngleRef.current - cfg.targetAngle);
+            const safeRange = totalRange === 0 ? 1 : totalRange;
+            
+            let achieved = 0;
+            if (isFlexion) {
+              achieved = Math.max(0, baselineAngleRef.current - repPeak);
+            } else {
+              achieved = Math.max(0, repPeak - baselineAngleRef.current);
+            }
+            
+            let score = Math.round((achieved / safeRange) * 100);
             score = Math.max(0, Math.min(100, score));
             setLatestROM(score);
             setLatestAngle(repPeak);
