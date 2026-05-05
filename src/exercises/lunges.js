@@ -9,22 +9,36 @@ export default {
     ankle: 27
   },
   analyze(landmarks, stage) {
-    const hip = landmarks[23];
-    const knee = landmarks[25];
-    const ankle = landmarks[27];
+    const leftHip = landmarks[23];
+    const leftKnee = landmarks[25];
+    const leftAnkle = landmarks[27];
+    
+    const rightHip = landmarks[24];
+    const rightKnee = landmarks[26];
+    const rightAnkle = landmarks[28];
+
+    // Calculate angles for both sides
+    const kneeL = calculateAngle(leftHip, leftKnee, leftAnkle);
+    const kneeR = calculateAngle(rightHip, rightKnee, rightAnkle);
+    
+    // The active leg in a lunge will be the one that bends the most
+    const useLeft = (leftKnee.visibility > 0.65 && kneeL < 155) || (leftKnee.visibility > rightKnee.visibility);
+
+    const hip = useLeft ? leftHip : rightHip;
+    const knee = useLeft ? leftKnee : rightKnee;
+    const ankle = useLeft ? leftAnkle : rightAnkle;
+    const kneeAngle = useLeft ? kneeL : kneeR;
 
     if (hip.visibility < 0.65 || knee.visibility < 0.65 || ankle.visibility < 0.65) {
       return { 
         stage, 
-        feedback: { textEn: 'Keep leg in view', type: 'neutral' }, 
+        feedback: { textEn: 'Keep both legs in view', type: 'neutral' }, 
         isGoodRep: false, 
         isCorrectForm: false,
         viewType: 'side',
         angles: null
       };
     }
-
-    const kneeAngle = calculateAngle(hip, knee, ankle);
 
     let nextStage = stage;
     let feedback = { textEn: 'Step forward...', type: 'neutral' };
@@ -39,7 +53,7 @@ export default {
       nextStage = 'UP';
     }
 
-    if (kneeAngle < 120) { // 120° = functional lunge depth for rehab; 100° required full athletic depth
+    if (kneeAngle < 120) { 
       if (stage === 'UP') {
         feedback = { textEn: 'Great depth!', type: 'good' };
         nextStage = 'DOWN';
@@ -52,7 +66,10 @@ export default {
       isGoodRep, 
       isCorrectForm,
       viewType: 'side', 
-      angles: { knee: kneeAngle } 
+      angles: { 
+        knee: kneeAngle,
+        side: useLeft ? 'left' : 'right'
+      } 
     };
   }
 };

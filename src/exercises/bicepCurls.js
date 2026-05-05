@@ -9,14 +9,25 @@ export default {
     wrist: 15
   },
   analyze(landmarks, stage) {
-    const shoulder = landmarks[11];
-    const elbow = landmarks[13];
-    const wrist = landmarks[15];
+    const leftShoulder = landmarks[11];
+    const leftElbow = landmarks[13];
+    const leftWrist = landmarks[15];
+    
+    const rightShoulder = landmarks[12];
+    const rightElbow = landmarks[14];
+    const rightWrist = landmarks[16];
+
+    // Determine which side is more visible or active
+    const useLeft = leftElbow.visibility > rightElbow.visibility;
+    
+    const shoulder = useLeft ? leftShoulder : rightShoulder;
+    const elbow = useLeft ? leftElbow : rightElbow;
+    const wrist = useLeft ? leftWrist : rightWrist;
 
     if (shoulder.visibility < 0.65 || elbow.visibility < 0.65 || wrist.visibility < 0.65) {
       return { 
         stage, 
-        feedback: { textEn: 'Keep arm in view', type: 'neutral' }, 
+        feedback: { textEn: 'Please stand so your arm is visible', type: 'neutral' }, 
         isGoodRep: false, 
         isCorrectForm: false,
         viewType: 'side',
@@ -27,7 +38,7 @@ export default {
     const elbowAngle = calculateAngle(shoulder, elbow, wrist);
 
     const elbowDrift = Math.abs(elbow.x - shoulder.x);
-    const isElbowTucked = elbowDrift < 0.25; // 0.25 = ~17cm; 0.15 was too tight for non-perfect side views
+    const isElbowTucked = elbowDrift < 0.25; 
     
     let nextStage = stage;
     let feedback = { textEn: 'Curl your arm...', type: 'neutral' };
@@ -35,23 +46,23 @@ export default {
     let isCorrectForm = true;
 
     if (!isElbowTucked) {
-      feedback = { textEn: 'Keep elbows tucked to your side', type: 'error' };
+      feedback = { textEn: 'Keep elbow tucked to your side', type: 'error' };
       isCorrectForm = false;
     }
 
-    if (elbowAngle > 150) { // Full extension: MediaPipe reads ~148–155° even at true 180°; 160° was unreachable
+    if (elbowAngle > 150) {
       if (stage === 'UP') {
         if (isCorrectForm) {
           isGoodRep = true;
           feedback = { textEn: 'Excellent control. Rep counted.', type: 'good' };
         } else {
-          feedback = { textEn: 'Rep discarded: keep elbows tucked', type: 'error' };
+          feedback = { textEn: 'Rep discarded: keep elbow tucked', type: 'error' };
         }
       }
       nextStage = 'DOWN';
     }
 
-    if (elbowAngle < 70) { // Typical rehab peak flexion is 60–80°; 50° required near-extreme contraction
+    if (elbowAngle < 70) {
       if (stage === 'DOWN') {
         if (isCorrectForm) {
           feedback = { textEn: 'Full contraction achieved!', type: 'good' };
@@ -68,7 +79,10 @@ export default {
       isGoodRep, 
       isCorrectForm,
       viewType: 'side', 
-      angles: { elbow: elbowAngle } 
+      angles: { 
+        elbow: elbowAngle,
+        side: useLeft ? 'left' : 'right'
+      } 
     };
   }
 };

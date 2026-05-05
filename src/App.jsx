@@ -69,7 +69,7 @@ export default function App() {
   const [sourceType, setSourceType] = useState('NONE');
   const sourceTypeRef = useRef('NONE');
   const [sessions, setSessions] = useState(getSessions);
-  
+
   const [latestROM, setLatestROM] = useState(null);
   const [latestAngle, setLatestAngle] = useState(null);
   const [, setLatestAsymmetry] = useState(null);
@@ -148,18 +148,18 @@ export default function App() {
       offsetY = 0;
     }
 
-    canvas.style.left   = `${offsetX}px`;
-    canvas.style.top    = `${offsetY}px`;
-    canvas.style.width  = `${renderW}px`;
+    canvas.style.left = `${offsetX}px`;
+    canvas.style.top = `${offsetY}px`;
+    canvas.style.width = `${renderW}px`;
     canvas.style.height = `${renderH}px`;
-    canvas.width  = video.videoWidth;
+    canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
   }
 
   function updateFeedback(textEn, type, isCorrect = false) {
     setIsCorrectForm(isCorrect);
     setFeedback({ textEn, type });
-    
+
     // Speak all clinical guidance (errors and form corrections)
     if (type !== 'neutral') {
       speak(textEn);
@@ -206,7 +206,11 @@ export default function App() {
 
               const initialStage = getExerciseInitialStage(selectedExerciseId);
               if (stageRef.current === initialStage && !analysis.isGoodRep) {
-                baselineAngleRef.current = (baselineAngleRef.current * 0.98) + (rawAngle * 0.02);
+                // Smooth baseline but ignore extreme outliers (e.g. tracking jumps)
+                const diff = Math.abs(rawAngle - baselineAngleRef.current);
+                if (diff < 30 && rawAngle > 10) {
+                  baselineAngleRef.current = (baselineAngleRef.current * 0.95) + (rawAngle * 0.05);
+                }
               }
 
               if (analysis.stage !== stageRef.current) {
@@ -245,17 +249,17 @@ export default function App() {
             if (!startTimeRef.current) startTimeRef.current = Date.now();
             const repPeak = peakAngleRef.current ?? rawAngle ?? (cfg?.startAngle ?? 165);
             const isFlexion = cfg.targetAngle < cfg.startAngle;
-            
+
             const totalRange = Math.abs(baselineAngleRef.current - cfg.targetAngle);
             const safeRange = totalRange === 0 ? 1 : totalRange;
-            
+
             let achieved = 0;
             if (isFlexion) {
               achieved = Math.max(0, baselineAngleRef.current - repPeak);
             } else {
               achieved = Math.max(0, repPeak - baselineAngleRef.current);
             }
-            
+
             let score = Math.round((achieved / safeRange) * 100);
             score = Math.max(0, Math.min(100, score));
             setLatestROM(score);
@@ -429,9 +433,9 @@ export default function App() {
         duration: startTimeRef.current ? Math.round((Date.now() - startTimeRef.current) / 1000) : 0,
         timestamp: new Date().toISOString()
       };
-      saveSession(sessionData); 
-      setSessions(getSessions()); 
-      setCurrentReportData(sessionData); 
+      saveSession(sessionData);
+      setSessions(getSessions());
+      setCurrentReportData(sessionData);
       setShowReport(true);
       speak('Session complete');
     }
@@ -451,7 +455,7 @@ export default function App() {
             <span className="material-icons" style={{ fontSize: '0.75rem', verticalAlign: 'middle', color: 'var(--brand-accent)' }}>verified_user</span>
             Clinical System
           </span>
-          <h1>Rehab<span>AI</span> Pro</h1>
+          <h1>Tele<span>Rehabilitation</span></h1>
         </div>
         <div className="header-actions">
           {sessionPhase === 'ACTIVE' && (
@@ -477,15 +481,15 @@ export default function App() {
           <div ref={containerRef} className={`video-container ${isCameraReady ? 'active' : ''} orientation-${ROM_CONFIG[selectedExerciseId]?.orientation || 'portrait'}`}>
             <ErrorOverlay feedback={feedback} />
             <GoodFormBadge isCorrectForm={isCorrectForm} />
-            
+
             {/* Video and Canvas are always in DOM to keep refs stable, but hidden when not ready */}
-            <video 
-              ref={videoRef} 
-              playsInline 
-              muted 
+            <video
+              ref={videoRef}
+              playsInline
+              muted
             ></video>
-            <canvas 
-              ref={canvasRef} 
+            <canvas
+              ref={canvasRef}
               className="output-canvas"
             ></canvas>
 
@@ -516,8 +520,8 @@ export default function App() {
           {(sessionPhase === 'SETUP' || sessionPhase === 'COMPLETE') ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {sessionPhase === 'COMPLETE' && (
-                <button 
-                  onClick={resetSession} 
+                <button
+                  onClick={resetSession}
                   className="action-btn primary"
                   style={{ width: '100%', marginBottom: '1rem' }}
                 >
@@ -525,7 +529,7 @@ export default function App() {
                   New Session
                 </button>
               )}
-              <PreSessionScreen 
+              <PreSessionScreen
                 selectedExercise={selectedExerciseId}
                 setSelectedExercise={setSelectedExerciseId}
                 onStartSession={startSession}
@@ -566,8 +570,8 @@ export default function App() {
             {!isCameraReady
               ? 'Enable camera or upload video'
               : sourceType === 'FILE'
-              ? 'Analyze Video'
-              : 'Start Session'}
+                ? 'Analyze Video'
+                : 'Start Session'}
           </button>
         </div>
       )}

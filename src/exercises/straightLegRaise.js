@@ -11,40 +11,54 @@ export default {
     contraHip: 24
   },
   analyze(landmarks, stage) {
-    const hip = landmarks[23];
-    const knee = landmarks[25];
-    const ankle = landmarks[27];
-    const contraHip = landmarks[24]; // Used for compensatory detection
+    const leftHip = landmarks[23];
+    const leftKnee = landmarks[25];
+    const leftAnkle = landmarks[27];
+    
+    const rightHip = landmarks[24];
+    const rightKnee = landmarks[26];
+    const rightAnkle = landmarks[28];
+
+    // Detect which leg is being lifted (the lifted knee will have a lower Y value)
+    const liftL = leftHip.y - leftKnee.y;
+    const liftR = rightHip.y - rightKnee.y;
+    
+    const useLeft = liftL > liftR || (leftKnee.visibility > rightKnee.visibility && liftL > -0.05);
+
+    const hip = useLeft ? leftHip : rightHip;
+    const knee = useLeft ? leftKnee : rightKnee;
+    const ankle = useLeft ? leftAnkle : rightAnkle;
+    const contraHip = useLeft ? rightHip : leftHip;
+    const heightLifted = useLeft ? liftL : liftR;
 
     if (hip.visibility < 0.65 || knee.visibility < 0.65 || ankle.visibility < 0.65) {
       return { 
         stage, 
-        feedback: { textEn: 'Keep leg in view', type: 'neutral' }, 
+        feedback: { textEn: 'Ensure leg is visible to camera', type: 'neutral' }, 
         isGoodRep: false, 
         isCorrectForm: false,
-        viewType: 'side' 
+        viewType: 'side',
+        angles: null
       };
     }
 
     const legStraightness = calculateAngle(hip, knee, ankle);
 
     const hipDistance = Math.abs(hip.x - contraHip.x);
-    const isCompensating = hipDistance > 0.12; // 0.12 reduces false positives from breathing; 0.08 was too sensitive
+    const isCompensating = hipDistance > 0.12; 
 
     let nextStage = stage;
     let feedback = { textEn: 'Keep leg straight and lift', type: 'neutral' };
     let isGoodRep = false;
     let isCorrectForm = false;
 
-    if (legStraightness < 155) { // MediaPipe reads ~158° on a visually straight limb in motion; 165° was impossible mid-lift
+    if (legStraightness < 155) { 
       feedback = { textEn: 'Keep leg straight', type: 'error' };
     } else if (isCompensating) {
       feedback = { textEn: 'Control hip rotation', type: 'error' };
     } else {
       isCorrectForm = true;
     }
-
-    const heightLifted = hip.y - knee.y; 
 
     if (heightLifted > 0.1) { 
       if (stage === 'REST') {
@@ -75,7 +89,11 @@ export default {
       isGoodRep, 
       isCorrectForm,
       viewType: 'side', 
-      angles: { hip: pseudoAngle, legStraightness } 
+      angles: { 
+        hip: pseudoAngle, 
+        legStraightness,
+        side: useLeft ? 'left' : 'right'
+      } 
     };
   }
 };

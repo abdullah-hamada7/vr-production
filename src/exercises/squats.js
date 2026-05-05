@@ -105,7 +105,7 @@ export default {
       isCorrectForm,
       viewType: isSideView ? 'side' : 'front', 
       angles: { 
-        knee: kneeL, 
+        knee: primaryKnee, 
         kneeL, 
         kneeR, 
         back: backAngle,
